@@ -1,0 +1,30 @@
+name: Redeem codes
+
+on:
+  workflow_dispatch:
+    inputs:
+      codes:
+        description: 'Space-separated Genshin redeem codes to claim'
+        required: true
+
+permissions: {}
+
+jobs:
+  redeem:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Redeem
+        run: node redeem.js
+        env:
+          COOKIE: ${{ secrets.COOKIE }}
+          CODES: ${{ inputs.codes }}
