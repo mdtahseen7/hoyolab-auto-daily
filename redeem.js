@@ -43,6 +43,17 @@ async function getJson(url) {
 }
 
 async function main() {
+  // DIAG=1: report cookie NAMES present (never values) and exit. Safe to log.
+  if (process.env.DIAG === '1') {
+    const names = [];
+    for (const pair of cookieHeader.split(';')) {
+      const i = pair.indexOf('=');
+      if (i > 0) names.push(pair.slice(0, i).trim());
+    }
+    console.log(JSON.stringify({ ok: true, diag: true, cookie_names: names }));
+    return;
+  }
+
   // 1. bound game roles -> uid (Asia / Stella).
   // UID_OVERRIDE env skips the roles lookup (diagnostic / fallback).
   let role;
