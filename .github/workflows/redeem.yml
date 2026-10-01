@@ -6,6 +6,10 @@ on:
       codes:
         description: 'Space-separated Genshin redeem codes to claim'
         required: true
+      uid_override:
+        description: 'Skip role lookup and use this UID (diagnostic only)'
+        required: false
+        default: ''
 
 permissions: {}
 
@@ -28,3 +32,4 @@ jobs:
         env:
           COOKIE: ${{ secrets.COOKIE }}
           CODES: ${{ inputs.codes }}
+          UID_OVERRIDE: ${{ inputs.uid_override }}
