@@ -10,6 +10,10 @@ on:
         description: 'Skip role lookup and use this UID (diagnostic only)'
         required: false
         default: ''
+      diag:
+        description: "Set to 1 to list cookie names present (no values) and exit"
+        required: false
+        default: ''
 
 permissions: {}
 
@@ -33,3 +37,4 @@ jobs:
           COOKIE: ${{ secrets.COOKIE }}
           CODES: ${{ inputs.codes }}
           UID_OVERRIDE: ${{ inputs.uid_override }}
+          DIAG: ${{ inputs.diag }}
