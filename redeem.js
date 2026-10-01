@@ -43,21 +43,28 @@ async function getJson(url) {
 }
 
 async function main() {
-  // 1. bound game roles -> uid (Asia / Stella)
-  const rolesRes = await getJson(
-    `https://api-account-os.hoyoverse.com/account/binding/api/getUserGameRolesByCookie?game_biz=${GAME_BIZ}`);
-  if (rolesRes.retcode !== 0) {
-    console.log(JSON.stringify({ ok: false, auth_error: true, retcode: rolesRes.retcode, message: rolesRes.message }));
-    process.exit(2);
+  // 1. bound game roles -> uid (Asia / Stella).
+  // UID_OVERRIDE env skips the roles lookup (diagnostic / fallback).
+  let role;
+  if (process.env.UID_OVERRIDE) {
+    role = { game_uid: process.env.UID_OVERRIDE, nickname: '?', region: REGION };
+    console.log(JSON.stringify({ ok: true, role, uid_override: true }));
+  } else {
+    const rolesRes = await getJson(
+      `https://api-account-os.hoyoverse.com/account/binding/api/getUserGameRolesByCookie?game_biz=${GAME_BIZ}`);
+    if (rolesRes.retcode !== 0) {
+      console.log(JSON.stringify({ ok: false, auth_error: true, retcode: rolesRes.retcode, message: rolesRes.message }));
+      process.exit(2);
+    }
+    const roles = (rolesRes.data && rolesRes.data.list) || [];
+    const asia = roles.filter(r => r.region === REGION);
+    role = asia.find(r => (r.nickname || '').toLowerCase() === 'stella') || asia[0];
+    if (!role) {
+      console.log(JSON.stringify({ ok: false, error: `no ${REGION} role found` }));
+      process.exit(3);
+    }
+    console.log(JSON.stringify({ ok: true, role: { uid: role.game_uid, nickname: role.nickname, region: role.region } }));
   }
-  const roles = (rolesRes.data && rolesRes.data.list) || [];
-  const asia = roles.filter(r => r.region === REGION);
-  const role = asia.find(r => (r.nickname || '').toLowerCase() === 'stella') || asia[0];
-  if (!role) {
-    console.log(JSON.stringify({ ok: false, error: `no ${REGION} role found` }));
-    process.exit(3);
-  }
-  console.log(JSON.stringify({ ok: true, role: { uid: role.game_uid, nickname: role.nickname, region: role.region } }));
 
   // 2. redeem each code
   let authFailed = false;
